@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:softvence_agency_task/features/home/model/alarm_model.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -57,12 +60,22 @@ class HomeController extends GetxController {
     String formattedTime = TimeOfDay(
       hour: pickedDateTime.hour,
       minute: pickedDateTime.minute,
+    // ignore: use_build_context_synchronously
     ).format(context);
 
     selectdate.value = formattedDate;
     selecttime.value = formattedTime;
+    final newAlarm = AlarmModel(date: formattedDate, time: formattedTime);
+    alarmList.add(newAlarm);
+    
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+   
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final List<String> savedAlarms =
+      prefs.getStringList('alarms') ?? <String>[];
 
-    alarmList.add(AlarmModel(date: formattedDate, time: formattedTime));
+  savedAlarms.add(jsonEncode(newAlarm.toJson()));
+  await prefs.setStringList('alarms', savedAlarms);
   }
 
   final FlutterLocalNotificationsPlugin notificationsPlugin =
@@ -81,6 +94,7 @@ class HomeController extends GetxController {
         InitializationSettings(android: androidSettings);
     await notificationsPlugin.initialize(initializationSettings);
 
+    // ignore: unused_local_variable
     final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
         notificationsPlugin
             .resolvePlatformSpecificImplementation<
@@ -91,10 +105,25 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     askNotificationPermission();
+    loadAlarmsFromStorage();
     init();
 
     super.onInit();
   }
+
+  Future<void> loadAlarmsFromStorage() async {
+  final prefs = await SharedPreferences.getInstance();
+  final savedAlarms = prefs.getStringList('alarms') ?? [];
+
+  alarmList.value = savedAlarms.map((alarmJson) {
+    final alarmMap = jsonDecode(alarmJson);
+    return AlarmModel(
+      date: alarmMap['date'],
+      time: alarmMap['time'],
+      isOn: RxBool(true),
+    );
+  }).toList();
+}
 
   Future<void> showInstantNotification({
     required int id,

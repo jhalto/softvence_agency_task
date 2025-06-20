@@ -8,14 +8,14 @@ class AlarmModel {
   AlarmModel({
     required this.date,
     required this.time,
-    bool isOn = true,
-  }):isOn = isOn.obs;
+    RxBool? isOn,
+  }) : isOn = isOn ?? RxBool(true);
 
   factory AlarmModel.fromJson(Map<String, dynamic> json) {
     return AlarmModel(
       date: json['date'],
       time: json['time'],
-      isOn: json['isOn'] ?? true,
+      isOn: RxBool(true), // default ON when loaded
     );
   }
 
@@ -23,7 +23,6 @@ class AlarmModel {
     return {
       'date': date,
       'time': time,
-      'isOn': isOn,
     };
   }
 }

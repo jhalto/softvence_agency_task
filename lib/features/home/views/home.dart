@@ -89,6 +89,7 @@ class Home extends StatelessWidget {
             Expanded(
               child: Obx(
                 () => ListView.builder(
+                  padding: EdgeInsets.zero,
                   itemCount: controller.alarmList.length,
                   itemBuilder: (context, index) {
                     var alarm = controller.alarmList[index];
@@ -131,6 +132,7 @@ class Home extends StatelessWidget {
                                     value: alarm.isOn.value,
                                     onToggle: (bool value) async {
                                       alarm.isOn.value = value;
+                                      await controller.notificationsPlugin.cancelAll();
 
                                       int notificationId = index;
                                           
