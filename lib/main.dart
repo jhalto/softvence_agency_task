@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:softvence_agency_task/features/onboarding/views/onboarding1.dart';
+final FlutterLocalNotificationsPlugin notificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // ✅ Required for async setup
+
+  // ✅ Initialize notifications
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initSettings = InitializationSettings(android: androidSettings);
+  await notificationsPlugin.initialize(initSettings);
+
+  // ✅ Request permissions (especially for Android 13+ and iOS)
+
+
   runApp(const MyApp());
 }
 
