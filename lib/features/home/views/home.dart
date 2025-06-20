@@ -7,17 +7,19 @@ import 'package:softvence_agency_task/common_widget/custom_button.dart';
 import 'package:softvence_agency_task/constants/app_colors.dart';
 import 'package:softvence_agency_task/constants/app_image.dart';
 import 'package:softvence_agency_task/constants/app_text_style.dart';
+import 'package:softvence_agency_task/features/home/controllers/home_controller.dart';
 import 'package:softvence_agency_task/features/location/controllers/location_controller.dart';
 
 class Home extends StatelessWidget {
   Home({super.key});
  final locationController = Get.find<LocationController>();
+ final controller  = Get.put(HomeController());
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         
-        statusBarIconBrightness: Brightness.light, // For dark icons on light bg
+        statusBarIconBrightness: Brightness.light,
         
       ),
     );
@@ -52,7 +54,8 @@ class Home extends StatelessWidget {
                       SizedBox(
                         width: 9,
                       ),
-                      Expanded(child:Obx(() => Text(locationController.locationAddress.value.isEmpty?"Location is not fetched":locationController.locationAddress.value, style: globalPoppinStyle(
+                      Expanded(
+                        child:Obx(() => Text(locationController.locationAddress.value.isEmpty?"Location is not fetched":locationController.locationAddress.value, style: globalPoppinStyle(
                         lh: 1.5,
                         fs: 16,
                         fw: FontWeight.w400
@@ -64,7 +67,10 @@ class Home extends StatelessWidget {
                     onTap: (){
                       if(locationController.locationAddress.value.isEmpty){
                         Get.snackbar("Error", "Please fetch location first");
+                      }else{
+                        controller.pickDateTime(context);  
                       }
+                      
                     }, 
                     title: "Add Alarm",
                     radius: 4,
@@ -85,49 +91,57 @@ class Home extends StatelessWidget {
             SizedBox(
               height: 16,
             ),
-             Container(
-              padding: EdgeInsets.symmetric(
-                vertical: 24,
-                horizontal: 16,
-              ),
-              decoration: BoxDecoration(
-                color: Color(0xff3C3D3F),
-                borderRadius: BorderRadius.circular(8)
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("7:10 pm"
-                  ,style: globalPoppinStyle(
-                    fs: 24,
-                    fw: FontWeight.w400,
-                    lh: 1.5
-                  ),),
-                  Row(
-                    children: [
-                      Text("Fri 21 Mar 2025"
-                      ,style: globalPoppinStyle(
-                        fs: 14,
-                        lh: 1.42
-                      ),),
-                      SizedBox(width: 8,),
-                      FlutterSwitch(
-                        activeColor: AppColors.primaryColor,
-                        
-                        padding: 2,
-                        toggleSize: 12,
-                        width: 33,
-                        height: 18,
-                        value: true, onToggle: (bool value) { 
-                        
-                        value = false;
-                       },)
-                     
-                    ],
-                  )
-                ],
-              ),
-             ),
+            Expanded(
+              child:Obx(() => ListView.builder(
+                itemCount: controller.alarmList.length,
+                itemBuilder: (context, index) {
+                  var alarm = controller.alarmList[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: 24,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: Color(0xff3C3D3F),
+                  borderRadius: BorderRadius.circular(8)
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(alarm.time
+                    ,style: globalPoppinStyle(
+                      fs: 24,
+                      fw: FontWeight.w400,
+                      lh: 1.5
+                    ),),
+                    Row(
+                      children: [
+                        Text(alarm.date,style: globalPoppinStyle(
+                          fs: 14,
+                          lh: 1.42
+                        ),),
+                        SizedBox(width: 8,),
+                        Obx(() => FlutterSwitch(
+                          activeColor: AppColors.primaryColor,
+                          padding: 2,
+                          toggleSize: 12,
+                          width: 33,
+                          height: 18,
+                          value: alarm.isOn.value,
+                           onToggle: (bool value) { 
+                          
+                          alarm.isOn.value = value;
+                         },)), 
+                       
+                      ],
+                    )
+                  ],
+                ),
+                             ),
+              );
+            },)) ) 
           ],
         ),
       ),
